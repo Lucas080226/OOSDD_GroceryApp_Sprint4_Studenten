@@ -51,8 +51,55 @@ namespace Grocery.Core.Services
 
         public List<BestSellingProducts> GetBestSellingProducts(int topX = 5)
         {
-            throw new NotImplementedException();
+            var groceriesrepo = _groceriesRepository;
+            var productrepo = _productRepository;
+            var grocerielists = groceriesrepo.GetAll();
+
+            Dictionary<int, int> bestproductspair = new Dictionary<int, int>();
+
+            
+            foreach (var product in grocerielists)
+            {
+                var productid = product.ProductId;
+                if (!bestproductspair.ContainsKey(productid))
+                {
+                    bestproductspair[productid] = 0;
+                }
+                bestproductspair[productid]++;
+            }
+
+            
+            var ordered = bestproductspair.OrderByDescending(n => n.Value).Take(topX);
+            Dictionary<int, int> ranking = new Dictionary<int, int>();
+
+            int count = 1;
+            foreach (var item2 in ordered)
+            {
+                ranking[item2.Key] = count; 
+                count++;
+            }
+
+            
+            List<BestSellingProducts> bestproducts = new List<BestSellingProducts>();
+            foreach (var item in ordered)
+            {
+                var product = productrepo.Get(item.Key);
+
+                int rank = ranking[item.Key];
+                BestSellingProducts bestproduct = new BestSellingProducts(
+                    item.Key,
+                    product.Name,
+                    product.Stock,
+                    item.Value,
+                    rank
+                );
+
+                bestproducts.Add(bestproduct);
+            }
+
+            return bestproducts;
         }
+
 
         private void FillService(List<GroceryListItem> groceryListItems)
         {
