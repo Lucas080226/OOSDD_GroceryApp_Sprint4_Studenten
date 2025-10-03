@@ -53,29 +53,32 @@ namespace Grocery.Core.Services
         {
             var groceriesrepo = _groceriesRepository;
             var productrepo = _productRepository;
-            var grocerielists = groceriesrepo.GetAll();
+            var groceryItems = groceriesrepo.GetAll();
 
             Dictionary<int, int> bestproductspair = new Dictionary<int, int>();
 
-            
-            foreach (var product in grocerielists)
+          
+            foreach (var groceryItem in groceryItems)
             {
-                var productid = product.ProductId;
-                if (!bestproductspair.ContainsKey(productid))
+                var productId = groceryItem.ProductId;
+
+                if (!bestproductspair.ContainsKey(productId))
                 {
-                    bestproductspair[productid] = 0;
+                    bestproductspair[productId] = 0;
                 }
-                bestproductspair[productid]++;
+
+                bestproductspair[productId] += groceryItem.Amount; 
             }
 
             
             var ordered = bestproductspair.OrderByDescending(n => n.Value).Take(topX);
-            Dictionary<int, int> ranking = new Dictionary<int, int>();
 
+            
+            Dictionary<int, int> ranking = new Dictionary<int, int>();
             int count = 1;
-            foreach (var item2 in ordered)
+            foreach (var item in ordered)
             {
-                ranking[item2.Key] = count; 
+                ranking[item.Key] = count;
                 count++;
             }
 
@@ -90,7 +93,7 @@ namespace Grocery.Core.Services
                     item.Key,
                     product.Name,
                     product.Stock,
-                    item.Value,
+                    item.Value, 
                     rank
                 );
 
@@ -99,6 +102,7 @@ namespace Grocery.Core.Services
 
             return bestproducts;
         }
+
 
 
         private void FillService(List<GroceryListItem> groceryListItems)
